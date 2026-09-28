@@ -25,6 +25,12 @@ public class CameraController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked; 
     }
 
+    public void SetAsSpectator ()
+    {
+        isSpectator = true;
+        transform.parent = null;
+    }
+
     // Update is called once per frame
     void Update()
     {
