@@ -71,6 +71,10 @@ public class PlayerController : MonoBehaviourPun
             GetComponentInChildren<Camera>().gameObject.SetActive(false);
             rig.isKinematic = true;
         }
+        else
+        {
+            GameUI.instance.Initialize(this);
+        }
     }
 
     [PunRPC]
@@ -142,6 +146,13 @@ public class PlayerController : MonoBehaviourPun
     public void AddKill ()
     {
         kills++;
+    }
+
+    [PunRPC]
+    public void Heal (int amountToHeal)
+    {
+        curHp = Mathf.Clamp(curHp + amountToHeal, 0, maxHp);
+        // update the health bar UI
     }
 
     // Update is called once per frame

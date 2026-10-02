@@ -59,6 +59,13 @@ private PlayerController player;
         bulletScript.rig.linearVelocity = dir * bulletSpeed;
     }
 
+    [PunRPC]
+    public void GiveAmmo (int ammoToGive)
+    {
+        curAmmo = Mathf.Clamp(curAmmo + ammoToGive, 0, maxAmmo);
+        // update the ammo text
+    }
+
     // Update is called once per frame
     void Update()
     {

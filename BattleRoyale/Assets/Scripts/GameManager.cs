@@ -53,9 +53,15 @@ public class GameManager : MonoBehaviourPun
         return players.First(x => x.id == playerId);
     }
 
-    public PlayerController GetPlayer (GameObject playerObj)
+    public PlayerController GetPlayer (GameObject playerObject)
     {
-        return players.First(x => x.gameObject == playerObj);
+        foreach(PlayerController player in players)
+        {
+            if(player != null && player.gameObject == playerObject)
+            return player;
+        }
+        
+        return null;
     }
 
     public void CheckWinCondition ()
@@ -74,6 +80,17 @@ public class GameManager : MonoBehaviourPun
     void GoBackToMenu ()
     {
         NetworkManager.instance.ChangeScene("Menu");
+    }
+
+    public PlayerController GetPlayer (int playerId)
+    {
+        foreach(PlayerController player in players)
+        {
+            if(player != null && player.id == playerId)
+            return player;
+        }
+
+        return null;
     }
 
     // Update is called once per frame

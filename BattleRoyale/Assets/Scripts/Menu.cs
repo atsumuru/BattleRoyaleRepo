@@ -42,11 +42,13 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         // are we in a game?
         if(PhotonNetwork.InRoom)
         {
-        // go to the lobby
+            // go to the lobby
+            SetScreen(lobbyScreen);
+            UpdateLobbyUI();
 
-        // make the room visible
-        PhotonNetwork.CurrentRoom.IsVisible = true;
-        PhotonNetwork.CurrentRoom.IsOpen = true;
+            // make the room visible
+            PhotonNetwork.CurrentRoom.IsVisible = true;
+            PhotonNetwork.CurrentRoom.IsOpen = true;
         }
     }
 
@@ -66,6 +68,10 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         UpdateLobbyBrowserUI();
     }
 
+// -------------------------------
+// -------- Main Screen ----------
+// -------------------------------
+
     public void OnPlayerNameValueChanged (TMP_InputField playerNameInput)
     {
         PhotonNetwork.NickName = playerNameInput.text;
@@ -82,6 +88,8 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
     public void OnCreateRoomButton ()
     {
         SetScreen(createRoomScreen);
+
+        // works
     }
 
 // called when the "Find Room" button has been pressed
@@ -89,6 +97,10 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
     {
         SetScreen(lobbyBrowserScreen);
     }
+
+// -------------------------------
+// ----- Create Room Screen ------
+// -------------------------------
 
 // called when the "Back" button gets pressed
     public void OnBackButton ()
@@ -98,8 +110,14 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
     public void OnCreateButton (TMP_InputField roomNameInput)
     {
+        Debug.Log("this is working");
+
         NetworkManager.instance.CreateRoom(roomNameInput.text);
     }
+
+// -------------------------------
+// -------- Lobby Screen ---------
+// -------------------------------
 
     public override void OnJoinedRoom ()
     {
@@ -120,7 +138,7 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
         // set the room info text
         roomInfoText.text = "<b>Room Name</b>\n" + PhotonNetwork.CurrentRoom.Name;
-}
+    }
 
     public override void OnPlayerLeftRoom (Player otherPlayer)
     {
@@ -142,6 +160,10 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         PhotonNetwork.LeaveRoom();
         SetScreen(mainScreen);
     }
+
+// -------------------------------
+// ---- Lobby Browser Screen -----
+// -------------------------------
 
     void UpdateLobbyBrowserUI ()
     {
@@ -170,6 +192,8 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
     GameObject CreateRoomButton ()
     {
+        Debug.Log("this is working");
+        
         GameObject buttonObj = Instantiate(roomButtonPrefab, roomListContainer.transform);
         roomButtons.Add(buttonObj);
         return buttonObj;
