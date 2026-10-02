@@ -7,6 +7,8 @@ using System.Collections.Generic;
 
 public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
+    // declared variables
+
     [Header("Screens")]
     public GameObject mainScreen;
     public GameObject createRoomScreen;
@@ -29,7 +31,6 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
     private List<GameObject> roomButtons = new List<GameObject>();
     private List<RoomInfo> roomList = new List<RoomInfo>();
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         // disable the menu buttons at the start
@@ -110,8 +111,6 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
     public void OnCreateButton (TMP_InputField roomNameInput)
     {
-        Debug.Log("this is working");
-
         NetworkManager.instance.CreateRoom(roomNameInput.text);
     }
 
@@ -133,8 +132,9 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         
         // display all the players
         playerListText.text = "";
+
         foreach(Player player in PhotonNetwork.PlayerList)
-        playerListText.text += player.NickName + "\n";
+            playerListText.text += player.NickName + "\n";
 
         // set the room info text
         roomInfoText.text = "<b>Room Name</b>\n" + PhotonNetwork.CurrentRoom.Name;
@@ -212,6 +212,11 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
     public override void OnRoomListUpdate (List<RoomInfo> allRooms)
     {
         roomList = allRooms;
+
+        if (lobbyBrowserScreen.activeSelf)
+        {
+            UpdateLobbyBrowserUI();
+        }
     }
 
     // Update is called once per frame
