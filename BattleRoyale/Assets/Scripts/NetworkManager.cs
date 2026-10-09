@@ -9,8 +9,19 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public static NetworkManager instance;
     void Awake ()
     {
-    instance = this;
-    DontDestroyOnLoad(gameObject);
+        // instance = this;
+        // DontDestroyOnLoad(gameObject);
+
+        if (instance != null && instance != this)
+            gameObject.SetActive(false);
+        else
+        {
+            // set the instance
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        // not here :(
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -39,6 +50,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinRoom(roomName);
     }
 
+    [PunRPC]
     public void ChangeScene (string sceneName)
     {
         PhotonNetwork.LoadLevel(sceneName);

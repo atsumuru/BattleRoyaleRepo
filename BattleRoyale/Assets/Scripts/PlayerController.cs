@@ -89,6 +89,9 @@ public class PlayerController : MonoBehaviourPun
         photonView.RPC("DamageFlash", RpcTarget.Others);
 
         // update the health bar UI
+        if (photonView.IsMine)
+            GameUI.instance.UpdateHealthBar();
+
         // die if no health left
         if(curHp <= 0)
         photonView.RPC("Die", RpcTarget.All);
@@ -136,6 +139,13 @@ public class PlayerController : MonoBehaviourPun
 
             // set the cam to spectator
             GetComponentInChildren<CameraController>().SetAsSpectator();
+
+            // hide gun
+            weapon.gunModel.SetActive(false);
+
+            // hide player
+            GameUI.instance.HidePlayerUI();
+
             // disable the physics and hide the player
             rig.isKinematic = true;
             transform.position = new Vector3(0, -50, 0);
@@ -152,7 +162,10 @@ public class PlayerController : MonoBehaviourPun
     public void Heal (int amountToHeal)
     {
         curHp = Mathf.Clamp(curHp + amountToHeal, 0, maxHp);
+
         // update the health bar UI
+        if (photonView.IsMine)
+            GameUI.instance.UpdateHealthBar();
     }
 
     // Update is called once per frame
@@ -161,12 +174,11 @@ public class PlayerController : MonoBehaviourPun
         if(!photonView.IsMine || dead)
         return;
 
-        if(Input.GetMouseButtonDown(0))
-        weapon.TryShoot();
-
         Move();
-
+        
         if(Input.GetKeyDown(KeyCode.Space))
-        TryJump();
+            TryJump();
+        if(Input.GetMouseButtonDown(0))
+            weapon.TryShoot();
     }
 }

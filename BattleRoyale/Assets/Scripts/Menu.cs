@@ -132,7 +132,6 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         
         // display all the players
         playerListText.text = "";
-
         foreach(Player player in PhotonNetwork.PlayerList)
             playerListText.text += player.NickName + "\n";
 
@@ -151,8 +150,13 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.CurrentRoom.IsVisible = false;
 
+        // not here
+
         // tell everyone to load the game scene
         NetworkManager.instance.photonView.RPC("ChangeScene", RpcTarget.All, "Game");
+
+        // here
+        Debug.Log("I need you to work please.");
     }
 
     public void OnLeaveLobbyButton ()

@@ -51,6 +51,12 @@ public class GameUI : MonoBehaviour
         winText.text = winnerName + " wins";
     }
 
+    public void HidePlayerUI()
+    {
+        healthBar.gameObject.SetActive(false);
+        ammoText.gameObject.SetActive(false);
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

@@ -18,6 +18,8 @@ public GameObject bulletPrefab;
 public Transform bulletSpawnPos;
 private PlayerController player;
 
+public GameObject gunModel;
+
     void Awake ()
     {
         // get required components
@@ -38,7 +40,9 @@ private PlayerController player;
         curAmmo--;
 
         lastShootTime = Time.time;
+
         // update the ammo UI
+        GameUI.instance.UpdateAmmoText();
 
         // spawn the bullet
         player.photonView.RPC("SpawnBullet", RpcTarget.All, bulletSpawnPos.transform.position, Camera.main.transform.forward);
@@ -63,7 +67,9 @@ private PlayerController player;
     public void GiveAmmo (int ammoToGive)
     {
         curAmmo = Mathf.Clamp(curAmmo + ammoToGive, 0, maxAmmo);
+
         // update the ammo text
+        GameUI.instance.UpdateAmmoText();
     }
 
     // Update is called once per frame
