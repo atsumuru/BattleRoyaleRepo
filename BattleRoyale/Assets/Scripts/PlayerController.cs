@@ -126,6 +126,7 @@ public class PlayerController : MonoBehaviourPun
         dead = true;
 
         GameManager.instance.alivePlayers--;
+        GameUI.instance.UpdatePlayerInfoText();
 
         // host will check win condition
         if(PhotonNetwork.IsMasterClient)
@@ -140,15 +141,15 @@ public class PlayerController : MonoBehaviourPun
             // set the cam to spectator
             GetComponentInChildren<CameraController>().SetAsSpectator();
 
-            // hide gun
-            weapon.gunModel.SetActive(false);
-
             // hide player
             GameUI.instance.HidePlayerUI();
 
             // disable the physics and hide the player
             rig.isKinematic = true;
             transform.position = new Vector3(0, -50, 0);
+
+            // hide gun
+            weapon.gunModel.SetActive(false);
         }
     }
 

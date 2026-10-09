@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviourPun
     public float postGameTime;
 
     [Header("Round Timer")]
-    public float roundDuration = 120f;
+    public float roundDuration = 60f;
     
     private double roundEndTime;
     private bool timerStarted;
