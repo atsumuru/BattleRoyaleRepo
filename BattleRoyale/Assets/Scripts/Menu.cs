@@ -75,7 +75,9 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
     public void OnPlayerNameValueChanged (TMP_InputField playerNameInput)
     {
-        PhotonNetwork.NickName = playerNameInput.text;
+        PhotonNetwork.NickName = playerNameInput.text.Trim();
+
+        Debug.Log("Player nickname set to: " + PhotonNetwork.NickName);
     }
 
     public override void OnConnectedToMaster ()

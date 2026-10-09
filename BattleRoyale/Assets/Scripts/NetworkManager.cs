@@ -5,10 +5,14 @@ using Photon.Realtime;
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
     public int maxPlayers = 10;
+    public bool isConnectedToMaster = false;
+
     // instance
     public static NetworkManager instance;
     void Awake ()
     {
+        PhotonNetwork.AutomaticallySyncScene = true;
+
         // instance = this;
         // DontDestroyOnLoad(gameObject);
 
@@ -33,12 +37,20 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnConnectedToMaster ()
     {
+        isConnectedToMaster = true;
+
         Debug.Log("We've connected to the master server!");
     }
 
 // attempts to create a room
     public void CreateRoom (string roomName)
     {
+        if (!isConnectedToMaster || PhotonNetwork.NetworkClientState != ClientState.ConnectedToMasterServer)
+        {
+            Debug.LogWarning("Photon is not ready. Wait for connection to the Master Server.");
+            return;
+        }
+
         RoomOptions options = new RoomOptions();
         options.MaxPlayers = (byte)maxPlayers;
         PhotonNetwork.CreateRoom(roomName, options);
@@ -58,6 +70,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnDisconnected(DisconnectCause cause)
     {
+        isConnectedToMaster = false;
+
         PhotonNetwork.LoadLevel("Menu");
     }
 
