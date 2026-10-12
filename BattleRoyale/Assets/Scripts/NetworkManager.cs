@@ -1,6 +1,7 @@
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using System.Collections.Generic;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
@@ -54,8 +55,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 // attempts to create a room
     public void CreateRoom (string roomName)
     {
-        if (!PhotonNetwork.IsConnectedAndReady ||
-            PhotonNetwork.NetworkClientState != ClientState.JoinedLobby)
+        if (!PhotonNetwork.IsConnectedAndReady || PhotonNetwork.NetworkClientState != ClientState.JoinedLobby)
         {
             Debug.LogWarning("Photon is not ready or has not joined the lobby.");
             return;
@@ -122,6 +122,21 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if(PhotonNetwork.IsMasterClient)
         {
             GameManager.instance.CheckWinCondition();
+        }
+    }
+
+    public override void OnRoomListUpdate(List<RoomInfo> roomList)
+    {
+        Debug.Log("Photon sent a room list update.");
+        Debug.Log("Rooms in this update: " + roomList.Count);
+
+        foreach (RoomInfo room in roomList)
+        {
+            Debug.Log("Room name: " + room.Name);
+            Debug.Log("Visible: " + room.IsVisible);
+            Debug.Log("Open: " + room.IsOpen);
+            Debug.Log("Players: " + room.PlayerCount);
+            Debug.Log("-------------------------");
         }
     }
 

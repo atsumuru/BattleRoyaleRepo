@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb2eb1797f4742cfb294f9dc00c035d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Multiplayer.Center.Common::Unity.Multiplayer.Center.Common.MultiplayerCenterSettings
-  SelectedGenre: 0
+  SelectedGenre: -1
