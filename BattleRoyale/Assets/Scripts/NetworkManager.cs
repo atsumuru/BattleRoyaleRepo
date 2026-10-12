@@ -9,30 +9,28 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     // instance
     public static NetworkManager instance;
+
     void Awake ()
     {
-        PhotonNetwork.AutomaticallySyncScene = true;
-
-        // instance = this;
-        // DontDestroyOnLoad(gameObject);
-
         if (instance != null && instance != this)
-            gameObject.SetActive(false);
-        else
         {
-            // set the instance
-            instance = this;
-            DontDestroyOnLoad(gameObject);
+            Destroy(gameObject);
+            return;
         }
 
-        // not here :(
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        PhotonNetwork.AutomaticallySyncScene = true;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // connect to the master server
-        PhotonNetwork.ConnectUsingSettings();
+        if (!PhotonNetwork.IsConnected)
+        {
+            PhotonNetwork.ConnectUsingSettings();
+        }
     }
 
     public override void OnConnectedToMaster ()
@@ -40,20 +38,61 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         isConnectedToMaster = true;
 
         Debug.Log("We've connected to the master server!");
+
+        // Join the lobby so room listings can be received
+        if (!PhotonNetwork.InLobby && !PhotonNetwork.InRoom)
+        {
+            PhotonNetwork.JoinLobby();
+        }
+    }
+
+    public override void OnJoinedLobby()
+    {
+        Debug.Log("Successfully joined the Photon Lobby!");
     }
 
 // attempts to create a room
     public void CreateRoom (string roomName)
     {
-        if (!isConnectedToMaster || PhotonNetwork.NetworkClientState != ClientState.ConnectedToMasterServer)
+        if (!PhotonNetwork.IsConnectedAndReady ||
+            PhotonNetwork.NetworkClientState != ClientState.JoinedLobby)
         {
-            Debug.LogWarning("Photon is not ready. Wait for connection to the Master Server.");
+            Debug.LogWarning("Photon is not ready or has not joined the lobby.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(roomName))
+        {
+            Debug.LogWarning("Room name cannot be empty.");
             return;
         }
 
         RoomOptions options = new RoomOptions();
         options.MaxPlayers = (byte)maxPlayers;
-        PhotonNetwork.CreateRoom(roomName, options);
+        options.IsVisible = true;
+        options.IsOpen = true;
+
+        PhotonNetwork.CreateRoom(roomName.Trim(), options);
+
+        // if (!isConnectedToMaster || PhotonNetwork.NetworkClientState != ClientState.ConnectedToMasterServer)
+        // {
+        //     Debug.LogWarning("Photon is not ready. Wait for connection to the Master Server.");
+        //     return;
+        // }
+
+        // RoomOptions options = new RoomOptions();
+        // options.MaxPlayers = (byte)maxPlayers;
+        // PhotonNetwork.CreateRoom(roomName, options);
+    }
+
+    public override void OnCreatedRoom()
+    {
+        Debug.Log("Room created successfully: " + PhotonNetwork.CurrentRoom.Name);
+    }
+
+    public override void OnCreateRoomFailed(short returnCode, string message)
+    {
+        Debug.LogError("Room creation failed: " + message);
     }
 
     //attempts to join a room

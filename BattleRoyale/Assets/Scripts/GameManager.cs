@@ -86,8 +86,21 @@ public class GameManager : MonoBehaviourPun
 
     public void CheckWinCondition ()
     {
-        if(alivePlayers == 1)
-        photonView.RPC("WinGame", RpcTarget.All, players.First(x => !x.dead).id);
+        if (alivePlayers <= 0)
+        {
+            timerStarted = false;
+
+            // All players are dead, show the scoreboard
+            if (PhotonNetwork.IsMasterClient)
+            {
+                EndRoundByKills();
+            }
+        }
+        else if (alivePlayers == 1)
+        {
+            // One player remains alive
+            photonView.RPC("WinGame", RpcTarget.All, players.First(x => x != null && !x.dead).id);
+        }
     }
 
     [PunRPC]

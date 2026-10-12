@@ -82,9 +82,15 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
     public override void OnConnectedToMaster ()
     {
-        // enable the menu buttons once we connect to the server
-        createRoomButton.interactable = true;
-        findRoomButton.interactable = true;
+        // // enable the menu buttons once we connect to the server
+        // createRoomButton.interactable = true;
+        // findRoomButton.interactable = true;
+
+        // Join the lobby to receive available room updates
+        if (!PhotonNetwork.InLobby && !PhotonNetwork.InRoom)
+        {
+            PhotonNetwork.JoinLobby();
+        }
     }
 
 // called when the "Create Room" button has been pressed.
@@ -95,11 +101,25 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         // works
     }
 
-// called when the "Find Room" button has been pressed
-    public void OnFindRoomButton ()
+    public void OnFindRoomButton()
     {
         SetScreen(lobbyBrowserScreen);
+
+        if (PhotonNetwork.InLobby)
+        {
+            UpdateLobbyBrowserUI();
+        }
+        else if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
+        {
+            PhotonNetwork.JoinLobby();
+        }
     }
+
+// // called when the "Find Room" button has been pressed
+//     public void OnFindRoomButton ()
+//     {
+//         SetScreen(lobbyBrowserScreen);
+//     }
 
 // -------------------------------
 // ----- Create Room Screen ------
@@ -123,10 +143,10 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
     public override void OnJoinedRoom ()
     {
         SetScreen(lobbyScreen);
-        photonView.RPC("UpdateLobbyUI", RpcTarget.All);
+        UpdateLobbyUI();
+        // photonView.RPC("UpdateLobbyUI", RpcTarget.All);
     }
 
-    [PunRPC]
     void UpdateLobbyUI ()
     {
         // enable or disable the start game button depending on if we're the host
@@ -210,15 +230,53 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         NetworkManager.instance.JoinRoom(roomName);
     }
 
-    public void OnRefreshButton ()
+    public override void OnJoinedLobby()
     {
-        UpdateLobbyBrowserUI();
+        Debug.Log("Successfully joined Photon Lobby.");
+
+        createRoomButton.interactable = true;
+        findRoomButton.interactable = true;
     }
 
-    public override void OnRoomListUpdate (List<RoomInfo> allRooms)
+    public void OnRefreshButton ()
     {
-        roomList = allRooms;
+        if (PhotonNetwork.InLobby)
+        {
+            UpdateLobbyBrowserUI();
+        }
+        else if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
+        {
+            PhotonNetwork.JoinLobby();
+        }
 
+        // UpdateLobbyBrowserUI();
+    }
+
+    public override void OnRoomListUpdate(List<RoomInfo> allRooms)
+    {
+        foreach (RoomInfo room in allRooms)
+        {
+            int index = roomList.FindIndex(r => r.Name == room.Name);
+
+            // Remove rooms that are no longer available
+            if (room.RemovedFromList)
+            {
+                if (index != -1)
+                    roomList.RemoveAt(index);
+            }
+            else
+            {
+                // Add new rooms or update existing rooms
+                if (index == -1)
+                    roomList.Add(room);
+                else
+                    roomList[index] = room;
+            }
+        }
+
+        Debug.Log("Available rooms: " + roomList.Count);
+
+        // Refreshes the browser if ti is currently visible
         if (lobbyBrowserScreen.activeSelf)
         {
             UpdateLobbyBrowserUI();
