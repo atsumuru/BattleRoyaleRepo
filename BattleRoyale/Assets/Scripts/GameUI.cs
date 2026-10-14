@@ -40,6 +40,9 @@ public class GameUI : MonoBehaviour
 
     public void UpdatePlayerInfoText ()
     {
+        if (player == null || playerInfoText == null || GameManager.instance == null)
+            return;
+
         playerInfoText.text = "<b>Alive:</b> " + GameManager.instance.alivePlayers + "\n<b>Kills:</b> " + player.kills;
     }
 
@@ -96,6 +99,9 @@ public class GameUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (player != null && playerInfoText != null)
+        {
+            UpdatePlayerInfoText();
+        }
     }
 }

@@ -859,7 +859,7 @@ MonoBehaviour:
   - {fileID: 389343247}
   alivePlayers: 0
   postGameTime: 3
-  roundDuration: 60
+  roundDuration: 90
   scoreboardDisplayTime: 5
 --- !u!4 &147931343
 Transform:

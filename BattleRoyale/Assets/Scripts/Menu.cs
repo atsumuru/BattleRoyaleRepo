@@ -28,6 +28,8 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
     public RectTransform roomListContainer;
     public GameObject roomButtonPrefab;
 
+    private bool refreshingRooms = false;
+
     private List<GameObject> roomButtons = new List<GameObject>();
     private List<RoomInfo> roomList = new List<RoomInfo>();
 
@@ -111,6 +113,8 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         }
         else if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
         {
+            roomList.Clear();
+            UpdateLobbyBrowserUI();
             PhotonNetwork.JoinLobby();
         }
     }
@@ -147,6 +151,20 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
         // photonView.RPC("UpdateLobbyUI", RpcTarget.All);
     }
 
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        Debug.Log("Player joined the room: " + newPlayer.NickName);
+
+        UpdateLobbyUI();
+    }
+
+    public override void OnPlayerLeftRoom (Player otherPlayer)
+    {
+        Debug.Log("Player left the room: " + otherPlayer.NickName);
+        
+        UpdateLobbyUI();
+    }
+
     void UpdateLobbyUI ()
     {
         // enable or disable the start game button depending on if we're the host
@@ -159,11 +177,6 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
         // set the room info text
         roomInfoText.text = "<b>Room Name</b>\n" + PhotonNetwork.CurrentRoom.Name;
-    }
-
-    public override void OnPlayerLeftRoom (Player otherPlayer)
-    {
-        UpdateLobbyUI();
     }
 
     public void OnStartGameButton ()
@@ -236,20 +249,49 @@ public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
         createRoomButton.interactable = true;
         findRoomButton.interactable = true;
-    }
 
-    public void OnRefreshButton ()
-    {
-        if (PhotonNetwork.InLobby)
+        if (lobbyBrowserScreen.activeSelf)
         {
             UpdateLobbyBrowserUI();
         }
-        else if (PhotonNetwork.IsConnectedAndReady && !PhotonNetwork.InRoom)
+
+        refreshingRooms = false;
+    }
+
+    public override void OnLeftLobby()
+    {
+        if (refreshingRooms && PhotonNetwork.IsConnectedAndReady)
         {
+            roomList.Clear();
             PhotonNetwork.JoinLobby();
         }
+    }
 
-        // UpdateLobbyBrowserUI();
+    public void OnRefreshButton()
+    {
+        if (!PhotonNetwork.IsConnectedAndReady)
+        {
+            Debug.LogWarning("Cannot refresh: Photon is not ready.");
+            return;
+        }
+
+        if (PhotonNetwork.InRoom)
+        {
+            Debug.LogWarning("Leave the current room before refreshing.");
+            return;
+        }
+
+        if (PhotonNetwork.InLobby)
+        {
+            refreshingRooms = true;
+            PhotonNetwork.LeaveLobby();
+        }
+        else
+        {
+            refreshingRooms = true;
+            roomList.Clear();
+            PhotonNetwork.JoinLobby();
+        }
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> allRooms)

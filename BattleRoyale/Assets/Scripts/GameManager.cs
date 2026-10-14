@@ -22,7 +22,9 @@ public class GameManager : MonoBehaviourPun
     private double roundEndTime;
     private bool timerStarted;
 
-    public float scoreboardDisplayTime = 5f;
+    public float scoreboardDisplayTime = 10f;
+
+    private bool roundEnding = false;
 
     // instance
     public static GameManager instance;
@@ -70,6 +72,8 @@ public class GameManager : MonoBehaviourPun
             return player;
         }
 
+
+        Debug.LogWarning("GetPlayer could not find Actor ID: " + playerId);
         return null;
     }
 
@@ -86,28 +90,41 @@ public class GameManager : MonoBehaviourPun
 
     public void CheckWinCondition ()
     {
-        if (alivePlayers <= 0)
-        {
-            timerStarted = false;
+        if (roundEnding)
+            return;
 
-            // All players are dead, show the scoreboard
-            if (PhotonNetwork.IsMasterClient)
-            {
-                EndRoundByKills();
-            }
-        }
-        else if (alivePlayers == 1)
+        if (alivePlayers <= 1 && PhotonNetwork.IsMasterClient)
         {
-            // One player remains alive
-            photonView.RPC("WinGame", RpcTarget.All, players.First(x => x != null && !x.dead).id);
+                roundEnding = true;
+                timerStarted = false;
+                EndRoundByKills();
         }
     }
 
-    [PunRPC]
-    void WinGame (int winningPlayer)
+    public void RegisterPlayer(PlayerController player)
     {
-        // set the UI win text
-        Invoke("GoBackToMenu", postGameTime);
+        if (player == null)
+            return;
+
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i] != null && players[i].id == player.id)
+            {
+                players[i] = player;
+                return;
+            }
+        }
+
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i] == null)
+            {
+                players[i] = player;
+                return;
+            }
+        }
+
+        Debug.LogError("No empty slot for player ID: " + player.id);
     }
 
     void GoBackToMenu ()
@@ -173,6 +190,7 @@ public class GameManager : MonoBehaviourPun
     [PunRPC]
     public void ShowFinalResults(string scoreboard)
     {
+        roundEnding = true;
         timerStarted = false;
 
         if (GameUI.instance != null)
@@ -180,12 +198,15 @@ public class GameManager : MonoBehaviourPun
 
         // only the master client schedules the scene change
         if (PhotonNetwork.IsMasterClient)
+        {
+            StopAllCoroutines();
             StartCoroutine(ReturnToMenu());
+        }
     }
 
     IEnumerator ReturnToMenu()
     {
-        // Keep the scoreboard visible for 5 seconds
+        // Keep the scoreboard visible for 10 seconds
         yield return new WaitForSeconds(scoreboardDisplayTime);
 
         if (PhotonNetwork.IsMasterClient)
@@ -210,12 +231,15 @@ public class GameManager : MonoBehaviourPun
             if (GameUI.instance != null)
                 GameUI.instance.UpdateTimer(timeRemaining);
 
-            if (timeRemaining <= 0)
+            if (timeRemaining <= 0 && !roundEnding)
             {
                 timerStarted = false;
 
                 if (PhotonNetwork.IsMasterClient)
+                {
+                    roundEnding = true;
                     EndRoundByKills();
+                }
             }
         }
     }

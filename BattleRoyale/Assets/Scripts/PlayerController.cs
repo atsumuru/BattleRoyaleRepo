@@ -63,7 +63,7 @@ public class PlayerController : MonoBehaviourPun
         id = player.ActorNumber;
         photonPlayer = player;
 
-        GameManager.instance.players[id - 1] = this;
+        GameManager.instance.RegisterPlayer(this);
 
         // is this not our local player?
         if(!photonView.IsMine)
@@ -122,27 +122,42 @@ public class PlayerController : MonoBehaviourPun
     [PunRPC]
     void Die ()
     {
+        if (dead)
+            return;
+
         curHp = 0;
         dead = true;
 
         GameManager.instance.alivePlayers--;
-        GameUI.instance.UpdatePlayerInfoText();
 
-        // host will check win condition
-        if(PhotonNetwork.IsMasterClient)
-        GameManager.instance.CheckWinCondition();
+        if (GameUI.instance != null)
+            GameUI.instance.UpdatePlayerInfoText();
+
+        // the master client awards the kill before checking the win condition
+        if (PhotonNetwork.IsMasterClient)
+        {
+            if (curAttackerId != 0)
+            {
+                PlayerController attacker = GameManager.instance.GetPlayer(curAttackerId);
+
+                if (attacker != null)
+                {
+                    attacker.photonView.RPC("AddKill", RpcTarget.All);
+                }
+            }
+
+            StartCoroutine(CheckWinConditionAfterKill());
+        }
 
         // is this our local player?
         if(photonView.IsMine)
         {
-            if(curAttackerId != 0)
-            GameManager.instance.GetPlayer(curAttackerId).photonView.RPC("AddKill", RpcTarget.All);
-
             // set the cam to spectator
             GetComponentInChildren<CameraController>().SetAsSpectator();
 
             // hide player
-            GameUI.instance.HidePlayerUI();
+            if (GameUI.instance != null)
+                GameUI.instance.HidePlayerUI();
 
             // disable the physics and hide the player
             rig.isKinematic = true;
@@ -153,10 +168,26 @@ public class PlayerController : MonoBehaviourPun
         }
     }
 
+    IEnumerator CheckWinConditionAfterKill()
+    {
+        // Allow the kill-count RPC to be processed before building the scoreboard
+        yield return new WaitForSeconds(0.1f);
+
+        GameManager.instance.CheckWinCondition();
+    }
+
     [PunRPC]
     public void AddKill ()
     {
         kills++;
+
+        Debug.Log("AddKill received. Player ID: " + id + ", Kills: " + kills + ", IsMine: " + photonView.IsMine);
+
+        // update kill counter for the player who earned the kill
+        if (photonView.IsMine && GameUI.instance != null)
+        {
+            GameUI.instance.UpdatePlayerInfoText();
+        }
     }
 
     [PunRPC]
