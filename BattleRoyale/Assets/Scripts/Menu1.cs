@@ -5,7 +5,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
 
-public class Menu : MonoBehaviourPunCallbacks, ILobbyCallbacks
+public class Menu1 : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
     // declared variables
 
